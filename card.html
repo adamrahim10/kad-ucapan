@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kad Ucapan Digital</title>
+    <!-- Font Cantik dari Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Great+Vibes&display=swap" rel="stylesheet">
+    <!-- FontAwesome untuk ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-color: #f3e5d8;
+            --card-color: #fffbf0;
+            --text-color: #4a4a4a;
+            --accent-color: #d4a373;
+            --gold: #b08d55;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#e0d2c5 1px, transparent 1px);
+            background-size: 20px 20px;
+            font-family: 'Cormorant Garamond', serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            color: var(--text-color);
+        }
+
+        .container {
+            width: 100%;
+            max-width: 700px;
+            position: relative;
+        }
+
+        /* --- BAHAGIAN EDITOR (Input) --- */
+        .editor-panel {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            text-align: center;
+            transition: opacity 0.5s ease;
+            display: block; /* Default nampak */
+        }
+
+        .editor-panel h2 {
+            font-family: 'Great Vibes', cursive;
+            font-size: 3rem;
+            color: var(--gold);
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-family: inherit;
+            font-size: 1.1rem;
+            background: #fafafa;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .btn {
+            background-color: var(--gold);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, background 0.3s;
+            box-shadow: 0 4px 15px rgba(176, 141, 85, 0.3);
+            font-family: 'Cormorant Garamond', serif;
+            font-weight: bold;
+            margin: 5px;
+        }
+
+        .btn:hover {
+            background-color: #967642;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        /* --- BAHAGIAN KAD (Preview) --- */
+        .card-view {
+            display: none; /* Disembunyikan pada permulaan */
+            background-color: var(--card-color);
+            width: 100%;
+            min-height: 500px;
+            padding: 60px 40px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            border: 1px solid #e6dec8;
+            position: relative;
+            text-align: center;
+        }
+
+        .card-view::before {
+            content: '';
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            right: 15px;
+            bottom: 15px;
+            border: 2px solid var(--gold);
+            pointer-events: none;
+        }
+
+        .card-view::after {
+            content: '❦';
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-color);
+            padding: 0 10px;
+            font-size: 2rem;
+            color: var(--gold);
+        }
+
+        #display-title {
+            font-family: 'Great Vibes', cursive;
+            font-size: 3.5rem;
+            color: var(--gold);
+            margin-bottom: 40px;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        #display-message {
+            font-size: 1.5rem;
+            line-height: 1.8;
+            white-space: pre-wrap;
+            min-height: 200px;
+            text-align: left;
+            margin: 0 auto;
+            max-width: 80%;
+            color: #2c2c2c;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1.5rem;
+            background-color: #333;
+            animation: blink 0.8s infinite;
+            margin-left: 2px;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Footer Butang dalam Kad */
+        .card-footer {
+            margin-top: 50px;
+            opacity: 0;
+            transition: opacity 1s;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        /* Toast Notification (Pop up kecil bila copy link) */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 4px;
+            padding: 16px;
+            position: fixed;
+            z-index: 1;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            font-size: 1rem;
+        }
+
+        #toast.show {
+            visibility: visible;
+            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+        }
+
+        @keyframes fadein {
+            from {bottom: 0; opacity: 0;}
+            to {bottom: 30px; opacity: 1;}
+        }
+
+        @keyframes fadeout {
+            from {bottom: 30px; opacity: 1;}
+            to {bottom: 0; opacity: 0;}
+        }
+
+        @media (max-width: 600px) {
+            .card-view { padding: 40px 20px; }
+            #display-title { font-size: 2.5rem; }
+            #display-message { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <!-- 1. PANEL EDITOR (Hanya muncul jika tiada data dalam link) -->
+        <div class="editor-panel" id="editor">
+            <h2>Cipta Ucapan</h2>
+            <p style="margin-bottom: 25px; color: #666;">Tulis mesej ikhlas anda. Penerima hanya akan melihat kad, bukan editor ini.</p>
+            
+            <div class="input-group">
+                <label>Tajuk Ucapan</label>
+                <input type="text" id="input-title" value="Untuk Awak">
+            </div>
+
+            <div class="input-group">
+                <label>Mesej Penuh</label>
+                <textarea id="input-message" placeholder="Tulis ucapan di sini...">Hai!
+Saya buat kad digital ini khas untuk awak. Semoga hari awak ceria selalu.
+
+Ikhlas,
+Kawan Awak.</textarea>
+            </div>
+
+            <button class="btn" onclick="previewCard()">Preview & Hasilkan Link ✨</button>
+        </div>
+
+        <!-- 2. KAD PAPARAN -->
+        <div class="card-view" id="card">
+            <h1 id="display-title"></h1>
+            
+            <div style="position: relative; display: inline-block; text-align: left;">
+                <span id="display-message"></span><span class="cursor" id="cursor"></span>
+            </div>
+
+            <div class="card-footer" id="card-footer">
+                <!-- Butang untuk Editor sahaja -->
+                <button id="btn-copy" class="btn" onclick="copyLink()">
+                    <i class="fas fa-link"></i> Salin Link Untuk Dihantar
+                </button>
+                <button id="btn-edit" class="btn btn-secondary" onclick="resetEditor()">
+                    <i class="fas fa-pen"></i> Edit Semula
+                </button>
+                
+                <!-- Butang untuk Penerima (Pilihan, contohnya buat kad sendiri) -->
+                <a id="btn-create-new" href="?" class="btn btn-secondary" style="display:none; text-decoration:none;">
+                    Buat Kad Sendiri
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast">Link berjaya disalin! Hantar kepada kawan anda.</div>
+
+    <script>
+        let typeInterval;
+        const speed = 70; 
+
+        // 1. Semak URL bila page loading
+        window.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const titleParam = urlParams.get('title');
+            const msgParam = urlParams.get('msg');
+
+            if (titleParam && msgParam) {
+                // MOD PENERIMA: Ada data dalam URL
+                // Sembunyikan editor, terus tunjuk kad
+                document.getElementById('editor').style.display = 'none';
+                
+                // Masukkan data dari URL ke dalam kad
+                showCard(decodeURIComponent(titleParam), decodeURIComponent(msgParam), true);
+            } else {
+                // MOD EDITOR: Tiada data, tunjuk editor
+                document.getElementById('editor').style.display = 'block';
+            }
+        });
+
+        // Fungsi Preview (Dari Editor)
+        function previewCard() {
+            const title = document.getElementById('input-title').value;
+            const message = document.getElementById('input-message').value;
+
+            if(message.trim() === "") {
+                alert("Sila tulis mesej dahulu!");
+                return;
+            }
+
+            // Sembunyi editor
+            document.getElementById('editor').style.display = 'none';
+            
+            // Tunjuk kad (Mode Editor = false)
+            showCard(title, message, false);
+        }
+
+        // Fungsi Utama Papar Kad & Animasi
+        function showCard(title, message, isRecipientMode) {
+            const card = document.getElementById('card');
+            card.style.display = 'block';
+
+            // Set Tajuk
+            const titleElem = document.getElementById('display-title');
+            titleElem.innerText = title;
+            setTimeout(() => { titleElem.style.opacity = '1'; }, 500);
+
+            // Mula Animasi Typewriter
+            setTimeout(() => {
+                typeWriterEffect(message, isRecipientMode);
+            }, 1500);
+
+            // Kawalan Butang (Penting!)
+            const btnCopy = document.getElementById('btn-copy');
+            const btnEdit = document.getElementById('btn-edit');
+            const btnCreate = document.getElementById('btn-create-new');
+
+            if (isRecipientMode) {
+                // Jika Penerima tengok: Sembunyikan butang edit/copy
+                btnCopy.style.display = 'none';
+                btnEdit.style.display = 'none';
+                btnCreate.style.display = 'inline-block'; // Tunjuk butang "Buat Sendiri" (pilihan)
+            } else {
+                // Jika Editor tengah preview: Tunjuk butang edit/copy
+                btnCopy.style.display = 'inline-block';
+                btnEdit.style.display = 'inline-block';
+                btnCreate.style.display = 'none';
+            }
+        }
+
+        function typeWriterEffect(text, isRecipientMode) {
+            const messageElem = document.getElementById('display-message');
+            const footerElem = document.getElementById('card-footer');
+            const cursor = document.getElementById('cursor');
+            
+            messageElem.innerText = ""; 
+            footerElem.style.opacity = '0';
+            cursor.style.display = 'inline-block';
+
+            let i = 0;
+            
+            // Reset interval lama jika ada
+            if (typeInterval) clearInterval(typeInterval);
+
+            typeInterval = setInterval(() => {
+                messageElem.innerText += text.charAt(i);
+                i++;
+                
+                // Auto scroll ke bawah jika teks panjang
+                if (i % 50 === 0) {
+                     window.scrollTo(0, document.body.scrollHeight);
+                }
+
+                if (i >= text.length) {
+                    clearInterval(typeInterval);
+                    setTimeout(() => {
+                        cursor.style.display = 'none';
+                        footerElem.style.opacity = '1';
+                    }, 1000);
+                }
+            }, speed);
+        }
+
+        function copyLink() {
+            const title = document.getElementById('input-title').value;
+            const message = document.getElementById('input-message').value;
+
+            // Bina URL
+            const baseUrl = window.location.href.split('?')[0];
+            const fullUrl = `${baseUrl}?title=${encodeURIComponent(title)}&msg=${encodeURIComponent(message)}`;
+
+            // Salin ke clipboard menggunakan fallback method (sebab iframe block clipboard API)
+            const tempInput = document.createElement("input");
+            tempInput.value = fullUrl;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            
+            try {
+                document.execCommand("copy");
+                showToast(); // Tunjuk notifikasi berjaya
+            } catch (err) {
+                alert("Gagal menyalin link. Sila copy manual dari address bar selepas generate.");
+                console.error(err);
+            }
+            
+            document.body.removeChild(tempInput);
+        }
+
+        function showToast() {
+            const x = document.getElementById("toast");
+            x.className = "show";
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        }
+
+        function resetEditor() {
+            clearInterval(typeInterval);
+            document.getElementById('card').style.display = 'none';
+            document.getElementById('editor').style.display = 'block';
+            document.getElementById('display-title').style.opacity = '0';
+        }
+    </script>
+</body>
+</html>
